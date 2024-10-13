@@ -1,31 +1,23 @@
-// incident.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Incident } from './incident.schema';
+import { CreateIncidentDto } from './dto/create.incident.dto';
+import { UpdateIncidentDto } from './dto/update.incident.dto';
 
 @Injectable()
 export class IncidentService {
-  constructor(
-    @InjectModel(Incident.name) private readonly incidentModel: Model<Incident>,
-  ) {}
+  constructor(@InjectModel(Incident.name) private incidentModel: Model<Incident>) {}
 
-  async createIncident(incidentData: Partial<Incident>): Promise<Incident> {
-    const createdIncident = new this.incidentModel(incidentData);
-    return createdIncident.save();
+  async createIncident(createIncidentDto: CreateIncidentDto): Promise<Incident> {
+    const newIncident = new this.incidentModel(createIncidentDto);
+    return newIncident.save();
   }
 
-  async updateIncident(
-    id: string,
-    incidentData: Partial<Incident>,
-  ): Promise<Incident> {
-    const updatedIncident = await this.incidentModel.findOneAndUpdate(
-      { id },
-      incidentData,
-      { new: true },
-    );
+  async updateIncident(updateIncidentDto: UpdateIncidentDto): Promise<Incident> {
+    const updatedIncident = await this.incidentModel.findByIdAndUpdate(updateIncidentDto.id, updateIncidentDto, { new: true });
     if (!updatedIncident) {
-      throw new Error(`Incident with id ${id} not found`);
+      throw new NotFoundException(`Incident with ID ${updateIncidentDto.id} not found`);
     }
     return updatedIncident;
   }
