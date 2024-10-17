@@ -12,22 +12,20 @@ import { InfraestructureModule } from './infraestructure/infraestructure.module'
       envFilePath: '.env',
     }),
     MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGO_URI'),
+      useFactory: () => ({
+        uri: 'mongodb+srv://monitoring-mngr:A9IJ20qntWFsW7k9@cluster0.knwczvb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
       }),
     }),
     IncidentModule,
     SqsModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
+      useFactory: () => ({
         consumers: [
           {
-            name: configService.get<string>('SQS_QUEUE_NAME'), // The SQS queue name
-            queueUrl: configService.get<string>('SQS_QUEUE_URL'), // The SQS queue URL
-            region: configService.get<string>('AWS_REGION'), // AWS region
+            name: 'Kpi-update', // The SQS queue name
+            queueUrl: 'https://sqs.us-east-2.amazonaws.com/908027377460/Kpi-update', // The SQS queue URL
+            region: 'us-east-2', // AWS region
           },
         ],
         producers: [],

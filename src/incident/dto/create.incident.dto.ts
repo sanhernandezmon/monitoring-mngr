@@ -1,8 +1,9 @@
+import { IncidentState } from "../state";
+
 export class CreateIncidentDto {
-    readonly initialDate: Date;
-    readonly resolutionDate?: Date;
+    readonly timestamp: string;
     readonly clientId: string;
-    readonly incidentType: string;
+    readonly state: IncidentState;
     readonly companyId: string;
     readonly description?: string;
   }
