@@ -6,4 +6,5 @@ export class CreateIncidentDto {
     readonly state: IncidentState;
     readonly companyId: string;
     readonly description?: string;
+    readonly pinataHash? : string;
   }

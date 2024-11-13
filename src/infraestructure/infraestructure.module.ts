@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { SqsService } from './sqs/sqs.service';
 import { IncidentModule } from 'src/incident/incident.module';
+import { PinataService } from './pinata/pinata.service';
+import { PolygonService } from './blockChain/block-chain.service';
 
 @Module({
   imports: [
@@ -8,6 +10,8 @@ import { IncidentModule } from 'src/incident/incident.module';
   ],
   providers: [
     SqsService,
+    PinataService,
+    PolygonService,
   ]
 })
 export class InfraestructureModule {}

@@ -20,8 +20,8 @@ export class Incident {
   @Prop({ required: true })
   companyId: string;
 
-  @Prop([{ state: String, timestamp: String }]) // History of state changes
-  history: { state: string; timestamp: string }[];
+  @Prop([{ state: String, timestamp: String, pinataHash: String }])
+  history: { state: string; timestamp: string, pinataHash: string }[];
 }
 
 export const IncidentSchema = SchemaFactory.createForClass(Incident);

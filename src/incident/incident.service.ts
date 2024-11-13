@@ -9,16 +9,24 @@ export class IncidentService {
   constructor(@InjectModel(Incident.name) private incidentModel: Model<Incident>) {}
 
   async updateIncident(updateIncidentDto: UpdateIncidentDto): Promise<void> {
-    const { id, timestamp, state } = updateIncidentDto;
+    const { id, timestamp, state, pinataHash } = updateIncidentDto;
 
     const incident = await this.incidentModel.findOne({ id });
 
     if (incident) {
-      incident.history.push({ state, timestamp });
+      incident.history.push({ state, timestamp, pinataHash});
       await incident.save();
     } else {
       const newIncident = new this.incidentModel(updateIncidentDto);
       await newIncident.save();
     }
+  }
+
+  async getIncidentById(id: string): Promise<Incident> {
+    const incident = await this.incidentModel.findById(id);
+    if (!incident) {
+      throw new NotFoundException(`Incident with ID ${id} not found`);
+    }
+    return incident;
   }
 }
