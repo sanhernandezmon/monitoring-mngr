@@ -23,7 +23,7 @@ export class SqsService {
         const incidentMessage = JSON.parse(messageBody.Message); 
     
 
-        const incident = await this.incidentService.getIncidentById(incidentMessage.id)
+        const incident = await this.incidentService.getIncidentById(Number(incidentMessage.id))
 
         const pinataHash = await this.pinataService.uploadIncident(incident)
         const poligonHash = await this.polygonService.uploadHashToPolygon(pinataHash);

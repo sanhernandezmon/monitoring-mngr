@@ -22,8 +22,8 @@ export class IncidentService {
     }
   }
 
-  async getIncidentById(id: string): Promise<Incident> {
-    const incident = await this.incidentModel.findById(id);
+  async getIncidentById(id: number): Promise<Incident> {
+    const incident = await this.incidentModel.findOne({ id }).exec();
     if (!incident) {
       throw new NotFoundException(`Incident with ID ${id} not found`);
     }

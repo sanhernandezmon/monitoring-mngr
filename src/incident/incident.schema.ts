@@ -5,7 +5,7 @@ export type IncidentDocument = Incident & Document;
 
 @Schema()
 export class Incident {
-  @Prop({ required: true })
+  @Prop({ required: true, type: Number, unique: true})
   id: number;
 
   @Prop({ required: true })
