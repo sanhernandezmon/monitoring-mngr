@@ -50,7 +50,7 @@ export class SqsService {
         };
     
         await this.incidentService.updateIncident(updateIncidentDto);
-        Logger.log(`Update Incident processed successfully: ${JSON.stringify(updateIncidentDto)}`);
+        Logger.log(`Update Incident processed successfully: ${updateIncidentDto}`);
       } catch (error) {
         Logger.error(`Failed to process update incident SQS message: ${error.message}`);
       }
