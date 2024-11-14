@@ -26,6 +26,8 @@ export class SqsService {
         const incident = await this.incidentService.getIncidentById(incidentMessage.id)
 
         const pinataHash = await this.pinataService.uploadIncident(incident)
+        const poligonHash = await this.polygonService.uploadHashToPolygon(pinataHash);
+
         const updateIncidentDto: UpdateIncidentDto = {
           id: incidentMessage.id,
           timestamp: incidentMessage.timestamp,
@@ -34,11 +36,11 @@ export class SqsService {
           state: incidentMessage.state,
           companyId: incidentMessage.company_id,
           description: incidentMessage.description || null,
-          pinataHash: pinataHash,
+          polygonHash: poligonHash.hash,
+          polygonCount: poligonHash.hashCount
         };
     
         await this.incidentService.updateIncident(updateIncidentDto);
-        await this.polygonService.uploadHashToPolygon(pinataHash);
         Logger.log(`Update Incident processed successfully: ${JSON.stringify(updateIncidentDto)}`);
       } catch (error) {
         Logger.error(`Failed to process update incident SQS message: ${error.message}`);

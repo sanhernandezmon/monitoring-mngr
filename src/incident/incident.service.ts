@@ -9,12 +9,12 @@ export class IncidentService {
   constructor(@InjectModel(Incident.name) private incidentModel: Model<Incident>) {}
 
   async updateIncident(updateIncidentDto: UpdateIncidentDto): Promise<void> {
-    const { id, timestamp, state, pinataHash } = updateIncidentDto;
+    const { id, timestamp, state, polygonHash, polygonCount } = updateIncidentDto;
 
     const incident = await this.incidentModel.findOne({ id });
 
     if (incident) {
-      incident.history.push({ state, timestamp, pinataHash});
+      incident.history.push({ state, timestamp, polygonHash, polygonCount });
       await incident.save();
     } else {
       const newIncident = new this.incidentModel(updateIncidentDto);
