@@ -19,12 +19,21 @@ export class SqsService {
     async handleUpdateIncidentMessage(message: Message) {
       try {
         const messageBody = JSON.parse(message.Body); 
-    
         const incidentMessage = JSON.parse(messageBody.Message); 
-    
-
-        const incident = await this.incidentService.getIncidentById(Number(incidentMessage.id))
-
+        let incident
+        try {
+          incident = await this.incidentService.getIncidentById(Number(incidentMessage.id))
+        } catch (error) {
+          incident = {
+            id: incidentMessage.id,
+            timestamp: incidentMessage.timestamp,
+  
+            clientId: incidentMessage.client_id,
+            state: incidentMessage.state,
+            companyId: incidentMessage.company_id,
+            description: incidentMessage.description || null,
+          }
+        }
         const pinataHash = await this.pinataService.uploadIncident(incident)
         const poligonHash = await this.polygonService.uploadHashToPolygon(pinataHash);
 
