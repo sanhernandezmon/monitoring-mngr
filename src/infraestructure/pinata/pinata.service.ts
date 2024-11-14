@@ -14,11 +14,7 @@ export class PinataService {
     });
 
     try {
-      const jsonIncident = JSON.stringify(incident);
-      const blob = new Blob([jsonIncident], { type: 'application/json' });
-      const file = new File([blob], `${incident.id+incident.timestamp}.json`, { type: 'application/json' });
-      const uploadHash = await pinata.upload.file(file);
-
+      const uploadHash = await pinata.upload.json(incident);
       return uploadHash.IpfsHash;
     } catch (error) {
       console.error(error);
