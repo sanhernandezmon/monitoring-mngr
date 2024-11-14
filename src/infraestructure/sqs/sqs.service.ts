@@ -23,7 +23,7 @@ export class SqsService {
       }
     }
 
-    @SqsMessageHandler('CREATE-INCIDENT-SQS')
+    @SqsMessageHandler('Kpi-creation')
     async handleCreateIncidentMessage(message: Message) {
         try {
             const createIncidentDto: CreateIncidentDto = JSON.parse(message.Body);
@@ -34,7 +34,7 @@ export class SqsService {
         }
     }
 
-    @SqsMessageHandler('UPDATE-INCIDENT-SQS')
+    @SqsMessageHandler('Kpi-update')
     async handleUpdateIncidentMessage(message: Message) {
         try {
             const updateIncidentDto: UpdateIncidentDto = JSON.parse(message.Body);

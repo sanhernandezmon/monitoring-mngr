@@ -25,8 +25,13 @@ import { InfraestructureModule } from './infraestructure/infraestructure.module'
       useFactory: (configService: ConfigService) => ({
         consumers: [
           {
-            name: configService.get<string>('SQS_QUEUE_NAME'), // The SQS queue name
-            queueUrl: configService.get<string>('SQS_QUEUE_URL'), // The SQS queue URL
+            name: configService.get<string>('SQS_CREATE_QUEUE_NAME'), // The SQS queue name
+            queueUrl: configService.get<string>('SQS_CREATE_QUEUE_URL'), // The SQS queue URL
+            region: configService.get<string>('AWS_REGION'), // AWS region
+          },
+          {
+            name: configService.get<string>('SQS_UPDATE_QUEUE_NAME'), // The SQS queue name
+            queueUrl: configService.get<string>('SQS_UPDATE_QUEUE_URL'), // The SQS queue URL
             region: configService.get<string>('AWS_REGION'), // AWS region
           },
         ],
