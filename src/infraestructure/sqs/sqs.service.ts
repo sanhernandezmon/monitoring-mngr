@@ -5,6 +5,7 @@ import { Message } from '@aws-sdk/client-sqs';
 import { UpdateIncidentDto } from '../../incident/dto/update.incident.dto';
 import { PinataService } from '../pinata/pinata.service';
 import { PolygonService } from '../blockChain/block-chain.service';
+import { Incident } from 'src/incident/incident.schema';
 
 @Injectable()
 export class SqsService {
@@ -20,37 +21,49 @@ export class SqsService {
       try {
         const messageBody = JSON.parse(message.Body); 
         const incidentMessage = JSON.parse(messageBody.Message); 
-        let incident
+        let incident: Incident
+        let wasCreated: boolean
         try {
           incident = await this.incidentService.getIncidentById(Number(incidentMessage.id))
+          wasCreated = true;
         } catch (error) {
           incident = {
             id: incidentMessage.id,
             timestamp: incidentMessage.timestamp,
-  
             clientId: incidentMessage.client_id,
             state: incidentMessage.state,
             companyId: incidentMessage.company_id,
-            description: incidentMessage.description || null,
+            history: [{
+              state: "CREATED",
+              timestamp: incidentMessage.timestamp,
+            },]
           }
+          wasCreated = false
         }
-        const pinataHash = await this.pinataService.uploadIncident(incident)
-        const poligonHash = await this.polygonService.uploadHashToPolygon(pinataHash);
+        if(wasCreated){
+          incident.history.push({
+            state: incidentMessage.state,
+            timestamp: incidentMessage.timestamp
+          })
+          const pinataHash = await this.pinataService.uploadIncident(incident)
+          const poligonHash = await this.polygonService.uploadHashToPolygon(pinataHash);
+          const updateIncidentDto: UpdateIncidentDto = {
+            id: incidentMessage.id,
+            state: incidentMessage.state,
+            timestamp: incidentMessage.timestamp,
+            polygonHash: poligonHash.hash,
+            polygonCount: poligonHash.hashCount        
+          }
+          await this.incidentService.updateIncident(updateIncidentDto);
+        }else{
+          const pinataHash = await this.pinataService.uploadIncident(incident)
+          const poligonHash = await this.polygonService.uploadHashToPolygon(pinataHash);
+          incident.history.find((history) => history.timestamp === incidentMessage.timestamp).polygonHash = poligonHash.hash
+          incident.history.find((history) => history.timestamp === incidentMessage.timestamp).polygonCount = poligonHash.hashCount
+          await this.incidentService.createIncident(incident);
 
-        const updateIncidentDto: UpdateIncidentDto = {
-          id: incidentMessage.id,
-          timestamp: incidentMessage.timestamp,
-
-          clientId: incidentMessage.client_id,
-          state: incidentMessage.state,
-          companyId: incidentMessage.company_id,
-          description: incidentMessage.description || null,
-          polygonHash: poligonHash.hash,
-          polygonCount: poligonHash.hashCount
-        };
-    
-        await this.incidentService.updateIncident(updateIncidentDto);
-        Logger.log(`Update Incident processed successfully: ${updateIncidentDto}`);
+        }
+        Logger.log(`Update Incident processed successfully: ${incident}`);
       } catch (error) {
         Logger.error(`Failed to process update incident SQS message: ${error.message}`);
       }

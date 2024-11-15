@@ -12,14 +12,13 @@ export class IncidentService {
     const { id, timestamp, state, polygonHash, polygonCount } = updateIncidentDto;
 
     const incident = await this.incidentModel.findOne({ id });
-
-    if (incident) {
       incident.history.push({ state, timestamp, polygonHash, polygonCount });
       await incident.save();
-    } else {
-      const newIncident = new this.incidentModel(updateIncidentDto);
+  }
+
+  async createIncident(incident: Incident): Promise<void> {
+      const newIncident = new this.incidentModel(incident);
       await newIncident.save();
-    }
   }
 
   async getIncidentById(id: number): Promise<Incident> {

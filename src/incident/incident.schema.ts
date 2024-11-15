@@ -21,7 +21,7 @@ export class Incident {
   companyId: string;
 
   @Prop([{ state: String, timestamp: String, polygonHash: String, polygonCount: Number }])
-  history: { state: string; timestamp: string, polygonHash: string, polygonCount: number}[];
+  history: { state: string; timestamp: string, polygonHash?: string, polygonCount?: number}[];
 }
 
 export const IncidentSchema = SchemaFactory.createForClass(Incident);
