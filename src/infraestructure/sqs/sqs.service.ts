@@ -6,14 +6,15 @@ import { UpdateIncidentDto } from '../../incident/dto/update.incident.dto';
 import { PinataService } from '../pinata/pinata.service';
 import { PolygonService } from '../blockChain/block-chain.service';
 import { Incident } from 'src/incident/incident.schema';
+import { SnsService } from '../sns/sns.service';
 
 @Injectable()
 export class SqsService {
 
     constructor(
-      private readonly incidentService: IncidentService,
       private readonly pinataService: PinataService,
-      private readonly polygonService: PolygonService
+      private readonly polygonService: PolygonService,
+      private readonly snsService: SnsService,
     ){}
 
     @SqsMessageHandler('Kpi-update')
@@ -21,49 +22,18 @@ export class SqsService {
       try {
         const messageBody = JSON.parse(message.Body); 
         const incidentMessage = JSON.parse(messageBody.Message); 
-        let incident: Incident
-        let wasCreated: boolean
-        try {
-          incident = await this.incidentService.getIncidentById(Number(incidentMessage.id))
-          wasCreated = true;
-        } catch (error) {
-          incident = {
-            id: incidentMessage.id,
-            timestamp: incidentMessage.timestamp,
-            clientId: incidentMessage.client_id,
-            state: incidentMessage.state,
-            companyId: incidentMessage.company_id,
-            history: [{
-              state: "CREATED",
-              timestamp: incidentMessage.timestamp,
-            },]
+        const pinataHash = await this.pinataService.uploadIncident(incidentMessage)
+        const pinataurl = `https://magenta-kind-lark-284.mypinata.cloud/ipfs/${pinataHash}`
+        const poligonHash = await this.polygonService.uploadHashToPolygon(pinataurl);
+        const polygonLink = `https://amoy.polygonscan.com/tx/${poligonHash.hash}`
+        await this.snsService.publishMessage(
+          {
+            "Message" : "your transaction has been updated",
+            "Transaction" : incidentMessage,
+            "Confimation link" : polygonLink
           }
-          wasCreated = false
-        }
-        if(wasCreated){
-          incident.history.push({
-            state: incidentMessage.state,
-            timestamp: incidentMessage.timestamp
-          })
-          const pinataHash = await this.pinataService.uploadIncident(incident)
-          const poligonHash = await this.polygonService.uploadHashToPolygon(pinataHash);
-          const updateIncidentDto: UpdateIncidentDto = {
-            id: incidentMessage.id,
-            state: incidentMessage.state,
-            timestamp: incidentMessage.timestamp,
-            polygonHash: poligonHash.hash,
-            polygonCount: poligonHash.hashCount        
-          }
-          await this.incidentService.updateIncident(updateIncidentDto);
-        }else{
-          const pinataHash = await this.pinataService.uploadIncident(incident)
-          const poligonHash = await this.polygonService.uploadHashToPolygon(pinataHash);
-          incident.history.find((history) => history.timestamp === incidentMessage.timestamp).polygonHash = poligonHash.hash
-          incident.history.find((history) => history.timestamp === incidentMessage.timestamp).polygonCount = poligonHash.hashCount
-          await this.incidentService.createIncident(incident);
-
-        }
-        Logger.log(`Update Incident processed successfully: ${incident}`);
+        )
+        Logger.log(`Update Incident processed successfully: ${polygonLink}`);
       } catch (error) {
         Logger.error(`Failed to process update incident SQS message: ${error.message}`);
       }
