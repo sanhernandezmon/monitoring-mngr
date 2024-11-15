@@ -9,7 +9,7 @@ export class SnsService {
   private topicArn: string;
 
   constructor() {
-    const region = "east-us-2";
+    const region = "us-east-2";
     this.topicArn = "arn:aws:sns:us-east-2:908027377460:notificacion_blockchain";
     this.snsClient = new SNSClient({ region });
   }
